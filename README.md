@@ -1,2 +1,2 @@
 # Crawlers
-crawlers for some web sites
+crawlers for some websites
