@@ -21,6 +21,7 @@ class Room(object):
         self.name = d["name"]
         self.city = d["city"]
         self.state = d["state"]
+        self.zipcode = int(d["zipcode"])
         self.neighborhood = d["neighborhood"]
 
         # ---------------------- space
@@ -43,7 +44,8 @@ class Room(object):
         self.month_price_factor = d["monthly_price_factor"]
         self.week_price_factor = d["weekly_price_factor"]
         
-        # ---------------------- ratings
+        # ---------------------- evaluations
+        self.business_travel = d.get("is_business_travel_ready",False)
         self.rating = d.get("star_rating",None)
         self.reviews_count = d.get("reviews_count",0)
 
@@ -53,6 +55,7 @@ class Room(object):
             "name":self.name,
             "city": self.city,
             "state": self.state ,
+            "zipcode":self.zipcode,
             "neighborhood": self.neighborhood,
             "property_type": self.property_type, 
             "room_type": self.room_type,
@@ -68,6 +71,7 @@ class Room(object):
             "price": self.price_per_night ,
             "monthly_price_factor": self.month_price_factor,
             "weekly_price_factor": self.week_price_factor,
+            "is_business_travel_ready":self.business_travel,
             "star_rating": self.rating ,
             "reviews_count": self.reviews_count,
             }
