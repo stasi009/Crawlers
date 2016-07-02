@@ -62,7 +62,7 @@ def parse_comments(listingid):
 
     response = requests.get(api_url)
     # if there is no reviews, response still have 'reviews' section, but just empty
-    reviews = json.loads(response.content)["reviews"]
+    reviews = response.json()["reviews"]
 
     return [review["comments"] for review in reviews if is_english(review["comments"])]
 
@@ -70,8 +70,7 @@ def parse_room(listing_id):
     #################### basic information
     api_url = "https://api.airbnb.com/v2/listings/{}?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3".format(listing_id)
     response = requests.get(api_url)
-    dict_room = json.loads(response.content)
-    room = Room(dict_room["listing"])
+    room = Room(response.json()["listing"])
 
     #################### aspect ratings
     parse_aspect_ratings(room)
