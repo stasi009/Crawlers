@@ -26,7 +26,7 @@ def get_saved2wishlist(soup,listingid):
     if len(tags) == 1:
         return int(tags[0].attrs['data-count'])
     elif len(tags) == 0: # not found
-        return None
+        return 0
     else:
         errmsg = "Room<{}> has {} 'saved to wishlist'".format(listingid,len(tags))
         raise Exception(errmsg)
@@ -36,7 +36,17 @@ def parse_aspect_ratings(room):
     response = requests.get(url)
     soup = BeautifulSoup(response.content)
 
-    room.aspect_ratings = dict((aspect, get_aspect_rating(soup,aspect,room.id))  for aspect in Aspects)
+    ################ retrieve aspect ratings
+    aspect_ratings = {}
+    for aspect in Aspects:
+        rating = get_aspect_rating(soup,aspect,room.id)
+        if rating is not None:
+            aspect_ratings[aspect] = rating
+
+    if len(aspect_ratings) >0:
+        room.aspect_ratings = aspect_ratings
+
+    ################ how many save this room into their wishlist
     room.saved2wishlist = get_saved2wishlist(soup,room.id)
 
 def is_english(txt):
