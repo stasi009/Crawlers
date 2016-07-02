@@ -91,6 +91,11 @@ class Room(object):
         except AttributeError:
             pass
 
+        try:
+            d["review_tags"] = self.review_tags
+        except AttributeError:
+            pass
+
         return d
 
 
