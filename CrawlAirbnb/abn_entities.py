@@ -53,12 +53,12 @@ class Room(object):
         self.star_rating = d.get("star_rating",None)
         self.reviews_count = d.get("reviews_count",0)
 
-        self.review_score = 0
-        self.aspect_ratings = {}
-        self.saved2wishlist = 0
-        self.comments = []
-        self.review_tags = []
-        self.star_distribution = [-1 for i in xrange(5)]
+        self.review_score = d.get("review_score", 0)
+        self.aspect_ratings = d.get("aspect_ratings", {})
+        self.saved2wishlist = d.get("saved2wishlist", 0)
+        self.comments = d.get("comments", [])
+        self.review_tags = d.get("review_tags", [])
+        self.star_percentages = d.get("star_percentages", [-1 for i in xrange(5)])
 
     def to_dict(self):
         return {
@@ -92,7 +92,7 @@ class Room(object):
             "comments": self.comments,
             "review_score": self.review_score,
             "review_tags": self.review_tags,
-            "star_distribution": self.star_distribution
+            "star_percentages": self.star_percentages
             }
 
 

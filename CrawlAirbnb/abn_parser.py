@@ -38,7 +38,7 @@ def parse_evaluations(room,meta):
     for s in dict_star_histogram:
         r = int( s["rating"])
         # rating is from 1 to 5, so have to r-1
-        room.star_distribution[r-1] = s["percentage"]
+        room.star_percentages[r-1] = s["percentage"]
 
     dict_listing = d["listing"]
     ################ retrieve aspect ratings
