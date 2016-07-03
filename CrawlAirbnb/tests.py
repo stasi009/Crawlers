@@ -16,14 +16,14 @@ def pprint_json(text,outname):
 
 
 meta = abn_meta.MetaInfo()
-listing_id = 1093088
+listing_id = 1246769
 room = abn_parser.parse_room(listing_id,meta)
 d = room.to_dict()
 with open("temp3.json","wt") as outf:
     json.dump(d,outf,indent=4)
 
 
-url = "https://api.airbnb.com/v2/listings/5116458?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3"
+url = "https://api.airbnb.com/v2/listings/1246769?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3"
 response = requests.get(url)
 pprint_json(response.content,"temp5.json")
 

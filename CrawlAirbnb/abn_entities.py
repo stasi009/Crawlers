@@ -25,6 +25,9 @@ class Room(object):
         self.neighborhood = d["neighborhood"]
         self.instant_bookable = d["instant_bookable"]
 
+        # ---------------------- hosts
+        self.host =  Host(d["primary_host"])
+
         # ---------------------- space
         self.property_type = d["property_type"]
         self.room_type = d["room_type"]
@@ -65,6 +68,7 @@ class Room(object):
             "state": self.state ,
             "zipcode":self.zipcode,
             "instant_bookable": self.instant_bookable,
+            "primary_host": self.host.to_dict(),
             "neighborhood": self.neighborhood,
             "property_type": self.property_type, 
             "room_type": self.room_type,
