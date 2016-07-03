@@ -2,3 +2,4 @@
 *.suo
 *.mdf
 *.ldf
+/CrawlAirbnb/rooms_json
