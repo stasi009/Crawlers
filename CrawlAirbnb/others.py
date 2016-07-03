@@ -1,4 +1,4 @@
-
+﻿
 Aspects = ["Accuracy","Communication","Cleanliness","Location","Check In","Value"]
 AspectPatterns = dict((aspect,re.compile(r'\${}.0.0.0$'.format(aspect))) for aspect in Aspects)
 
@@ -12,3 +12,14 @@ def get_aspect_rating(soup,aspect,listingid):
     else:
         errmsg = "Room<{}> has {} ratings for '{}'".format(listingid,len(tags),aspect)
         raise Exception(errmsg)
+
+
+
+def pprint_json_txt(text,outname):
+    d = json.loads(text)
+    with open(outname,"wt") as outfile:
+        json.dump(d,outfile,indent=4)
+
+def pprint_json(d,outname):
+    with open(outname,"wt") as outfile:
+        json.dump(d,outfile,indent=4)

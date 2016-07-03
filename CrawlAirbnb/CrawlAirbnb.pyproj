@@ -35,6 +35,9 @@
     <Compile Include="others.py">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="search_scraper.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="tests.py">
       <SubType>Code</SubType>
     </Compile>
