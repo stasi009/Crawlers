@@ -27,7 +27,7 @@ def get_review_tags(soup,meta):
 def parse_evaluations(room,meta):
     url = "https://www.airbnb.com/rooms/{}".format(room.id)
     response = requests.get(url)
-    soup = BeautifulSoup(response.content)
+    soup = BeautifulSoup(response.text)
     
     tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
     # json text is embedded in '<!--xxx-->', so remove comment tags at both ends

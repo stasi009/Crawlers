@@ -1,18 +1,22 @@
-
+﻿
 import requests
 import time
+import logging
 
 def _onepage_search(location,offset,limits=50):
     base_url = "https://api.airbnb.com/v2/search_results?client_id=3092nxybyb0otqw18e8nh5nty"
     search_parameters = {'location':location,'_offset':offset,'_limit':limits}
     
     response = requests.get(base_url,search_parameters)
-    search_results = response.json()["search_results"]
+    try:
+        search_results = response.json()["search_results"]
 
-    eof = True if len(search_results) < limits else False
-    return eof,( result["listing"]["id"]  for result in search_results )
+        eof = True if len(search_results) < limits else False
+        return eof,( result["listing"]["id"]  for result in search_results )
+    except KeyError:
+        logging.error("status_code=%d, content='%s'",response.status_code,response.text)
 
-def search(location,sleep_interval=0.5, limits=50):
+def search(location,sleep_interval=1, limits=50):
     offset = 0
     eof = False
     while not eof:

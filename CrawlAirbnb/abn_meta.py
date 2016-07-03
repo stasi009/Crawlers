@@ -1,4 +1,4 @@
-
+﻿
 from bs4 import BeautifulSoup
 from collections import OrderedDict
 import re
@@ -20,7 +20,7 @@ class MetaInfo(object):
                 logging.info("try to load meta-info from listing<%d>, ......",candidate_id)
                 url = "https://www.airbnb.com/rooms/{}".format(candidate_id)
                 response = requests.get(url)
-                soup = BeautifulSoup(response.content)
+                soup = BeautifulSoup(response.text)
 
                 tag = soup.find('meta',{'id':'_bootstrap-phrases'})
                 if tag is None:
