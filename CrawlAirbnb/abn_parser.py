@@ -33,6 +33,13 @@ def parse_evaluations(room,meta):
     # json text is embedded in '<!--xxx-->', so remove comment tags at both ends
     d = json.loads( tag.text[4:-3] )
 
+    ################ star distribution
+    dict_star_histogram = d["starHistogramData"]
+    for s in dict_star_histogram:
+        r = int( s["rating"])
+        # rating is from 1 to 5, so have to r-1
+        room.star_distribution[r-1] = s["percentage"]
+
     dict_listing = d["listing"]
     ################ retrieve aspect ratings
     room.review_score = dict_listing["review_details_interface"]["review_score"]
@@ -45,6 +52,8 @@ def parse_evaluations(room,meta):
     review_tags = dict_listing["listing_tags"]
     for tag in review_tags:
         tagid = tag["tagId"]
+        # order is important, only show first 5 on the page
+        # so the first 5 must be the most important 5 aspects
         room.review_tags.append(meta.tagid2txt(tagid))
 
     ################ how many save this room into their wishlist

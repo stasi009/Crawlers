@@ -54,6 +54,7 @@ class Room(object):
         self.saved2wishlist = 0
         self.comments = []
         self.review_tags = []
+        self.star_distribution = [-1 for i in xrange(5)]
 
     def to_dict(self):
         return {
@@ -83,7 +84,9 @@ class Room(object):
             "aspect_ratings":self.aspect_ratings,
             "saved2wishlist":self.saved2wishlist,
             "comments": self.comments,
-            "review_tags": self.review_tags
+            "review_score": self.review_score,
+            "review_tags": self.review_tags,
+            "star_distribution": self.star_distribution
             }
 
 

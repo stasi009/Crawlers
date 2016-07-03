@@ -7,7 +7,7 @@ import abn_parser
 import abn_meta
 
 logger = logging.getLogger('')# root logger
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 def pprint_json(text,outname):
     d = json.loads(text)
