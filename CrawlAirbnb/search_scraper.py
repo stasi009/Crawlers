@@ -2,40 +2,34 @@
 import requests
 import time
 import logging
+import threading
 
-def _onepage_search(location,offset,limits=50):
-    base_url = "https://api.airbnb.com/v2/search_results?client_id=3092nxybyb0otqw18e8nh5nty"
-    search_parameters = {'location':location,'_offset':offset,'_limit':limits}
-    
-    response = requests.get(base_url,search_parameters)
-    try:
-        search_results = response.json()["search_results"]
+class SearchScraper(threading.Thread):
 
-        eof = True if len(search_results) < limits else False
-        return eof,( result["listing"]["id"]  for result in search_results )
-    except KeyError:
-        logging.error("status_code=%d, content='%s'",response.status_code,response.text)
+    def __init__(self,settings = {}):
+        threading.Thread.__init__(self)
+        self._sleep_interval = settings.get("sleep_interval",2)# unit: seconds
+        self._page_limits = settings.get("page_limits",50)# maximal size in a page
+        self._logger = logging.getLogger("crawlabn.search")
 
-def search(location,offset,sleep_interval=1, limits=50):
-    eof = False
-    while not eof:
-        eof, listingids = _onepage_search(location,offset,limits)
+    def search_onepage(self,location,offset,limits):
+        base_url = "https://api.airbnb.com/v2/search_results?client_id=3092nxybyb0otqw18e8nh5nty"
+        search_parameters = {'location':location,'_offset':offset,'_limit':limits}
+        response = requests.get(base_url,search_parameters)
+        if response.ok:
+            self._logger.info("location<%s>'s search result from [%d~%d]",location,offset,offset+limits)
+            search_results = response.json()["search_results"]
 
-        for listingid in listingids:
-            yield listingid
+            nextpage = False if len(search_results) < limits else True
+            return nextpage,[ result["listing"]["id"]  for result in search_results ]
+        else:
+            self._logger.error("failed to download location<%s>'s search results from [%d~%d], status code=%d, reason='%s', content='%s'",location,offset,offset+limits, response.status_code,response.reason,response.text)
+            return False,None
 
-        offset += limits
-        time.sleep(sleep_interval)
 
-########################################
-# location = "San-Francisco--CA"
-location = "New-York--NY--United-States"
-offset = 0
-limits = 50
 
-search_results_iterator = search(location,offset,sleep_interval=2)
-for index,listingid in enumerate(search_results_iterator):
-    print "[{}]: {}".format(index+1,listingid)
+
+
 
 
 
