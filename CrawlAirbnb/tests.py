@@ -23,27 +23,9 @@ with open("temp3.json","wt") as outf:
     json.dump(d,outf,indent=4)
 
 
-listing_id=1246769
-url = "https://www.airbnb.com/rooms/{}".format(listing_id)
+url = "https://api.airbnb.com/v2/listings/5116458?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3"
 response = requests.get(url)
-soup = BeautifulSoup(response.content)
-tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
-
-
-with open(outname,"wt") as outfile:
-    json.dump(d,outfile,indent=4)
-
-
-listing_id = 1246769
-url = "https://www.airbnb.com/rooms/{}".format(listing_id)
-response = requests.get(url)
-soup = BeautifulSoup(response.content)
-    
-tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
-# json text is embedded in '<!--xxx-->', so remove comment tags at both ends
-d = json.loads( tag.text[4:-3] )
-
-dict_listing = d["listing"]
+pprint_json(response.content,"temp5.json")
 
 
 

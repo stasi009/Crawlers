@@ -23,6 +23,7 @@ class Room(object):
         self.state = d["state"]
         self.zipcode = int(d["zipcode"])
         self.neighborhood = d["neighborhood"]
+        self.instant_bookable = d["instant_bookable"]
 
         # ---------------------- space
         self.property_type = d["property_type"]
@@ -63,6 +64,7 @@ class Room(object):
             "city": self.city,
             "state": self.state ,
             "zipcode":self.zipcode,
+            "instant_bookable": self.instant_bookable,
             "neighborhood": self.neighborhood,
             "property_type": self.property_type, 
             "room_type": self.room_type,
