@@ -49,7 +49,7 @@ class ListingScraper(threading.Thread):
     def get_evaluations(self,room):
         response = requests.get("https://www.airbnb.com/rooms/{}".format(room.id))
         if response.ok:
-            self._logger.info("listing<%d>'s webpage downloaded",room.id)
+            self._logger.info("listing<%d>'s webpage downloaded to get evaluations",room.id)
 
             soup = BeautifulSoup(response.text)
             tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
@@ -107,10 +107,10 @@ class ListingScraper(threading.Thread):
         api_url = "https://api.airbnb.com/v2/listings/{}?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3".format(listing_id)
         response = requests.get(api_url)
         if response.ok:
-            self._logger.info("JSON downloaded from listing<%d>'s API",listing_id)
+            self._logger.info("basic informations downloaded from listing<%d>'s API",listing_id)
             room = Room(response.json()["listing"])
         else:
-            self._logger.error("failed to download listing<%d>'s from API, status code=%d, reason='%s', content='%s'",listingid,offset,offset+limits, response.status_code,response.reason,response.text)
+            self._logger.error("failed to download listing<%d>'s from API, status code=%d, reason='%s', content='%s'",listing_id, response.status_code,response.reason,response.text)
             response.raise_for_status()
 
         #################### aspect ratings

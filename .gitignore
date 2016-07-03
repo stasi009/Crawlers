@@ -3,3 +3,4 @@
 *.mdf
 *.ldf
 /CrawlAirbnb/rooms_json
+*.log

@@ -14,10 +14,11 @@ class MetaInfo(object):
     def __init__(self,seed_listingids = [10705179,1246769]):
         reviewtag_pattern = re.compile(r'review_tags.tag.\w+')
         self.__tags_id2txt = {}
+        self._logger = logging.getLogger("crawlabn.meta")
 
         for candidate_id in seed_listingids:
             try:
-                logging.info("try to load meta-info from listing<%d>, ......",candidate_id)
+                self._logger.info("try to load meta-info from listing<%d>, ......",candidate_id)
                 url = "https://www.airbnb.com/rooms/{}".format(candidate_id)
                 response = requests.get(url)
                 soup = BeautifulSoup(response.text)
@@ -36,11 +37,11 @@ class MetaInfo(object):
                             counter += 1
                             self.__tags_id2txt[counter] = v
 
-                    logging.info("successfully load meta-info from listing<%d>",candidate_id)
+                    self._logger.info("successfully load meta-info from listing<%d>",candidate_id)
                     break# stop after 1st successful loading
                     
             except Exception:
-                logging.warning("failed to load meta-info from listing<%d>, try next", candidate_id)
+                self._logger.warning("failed to load meta-info from listing<%d>, try next", candidate_id)
                 continue# try next listing
 
         # throw error if failed on all seed listings

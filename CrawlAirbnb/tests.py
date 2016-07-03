@@ -11,11 +11,18 @@ from meta_info import MetaInfo
 logger = logging.getLogger('crawlabn')
 logger.setLevel(logging.INFO)
 
+cloghandler = logging.StreamHandler()
+cloghandler.setLevel(logging.INFO)
+logger.addHandler(cloghandler)
+
+floghandler = logging.FileHandler('errors.log',mode='w')
+floghandler.setLevel(logging.WARNING)
+logger.addHandler(floghandler)
 
 meta = MetaInfo()
 listing_scraper = ListingScraper(meta,None,None)
 
-listing_id = 25002
+listing_id = 1308841
 room = listing_scraper.get_room(listing_id)
 
 saver = ListingJsonSaver("rooms_json")
@@ -23,8 +30,7 @@ saver.save(room)
 
 
 
-url = "https://api.airbnb.com/v2/reviews?client_id=3092nxybyb0otqw18e8nh5nty&listing_id=2056659&role=all&_limit=60"
-r = requests.get(url)
+
 
 
 
