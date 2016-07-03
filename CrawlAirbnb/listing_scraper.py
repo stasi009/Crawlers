@@ -95,11 +95,11 @@ class ListingScraper(threading.Thread):
             # if there is no reviews, response still have 'reviews' section, but just empty
             reviews = response.json()["reviews"]
 
-            eof = True if len(reviews) < limits else False
-            return eof,(review["comments"] for review in reviews if is_english(review["comments"]) )
+            nextpage = False if len(reviews) < limits else True
+            return nextpage,(review["comments"] for review in reviews if is_english(review["comments"]) )
         else:
-            self._logger.error("failed to download listing<%d>'s comments from [%d~%d] downloaded, status code=%d, reason='%s', content='%s'",listingid,offset,offset+limits, response.status_code,response.reason,response.text)
-            response.raise_for_status()
+            self._logger.error("failed to download listing<%d>'s comments from [%d~%d], status code=%d, reason='%s', content='%s'",listingid,offset,offset+limits, response.status_code,response.reason,response.text)
+            return False,None # stop when error occurs
 
     def get_room(self,listing_id):
         #################### basic information
@@ -119,10 +119,10 @@ class ListingScraper(threading.Thread):
 
         #################### comments
         offset = 0
-        eof = False
-        while not eof:
+        nextpage = True
+        while nextpage:
             time.sleep(self._sleep_interval)
-            eof,comments = self.get_onepage_comments(room.id,offset,self._page_limits)
+            nextpage,comments = self.get_onepage_comments(room.id,offset,self._page_limits)
             room.comments.extend(comments)
             offset += self._page_limits
 
