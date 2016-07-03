@@ -67,14 +67,23 @@ def is_english(txt):
     else:
         return True
 
-def parse_comments(listingid):
-    api_url = "https://api.airbnb.com/v2/reviews?client_id=3092nxybyb0otqw18e8nh5nty&listing_id={}&role=all".format(listingid)
+def _get_onepage_comments(listingid,offset,limits=50):
+    api_url = "https://api.airbnb.com/v2/reviews?client_id=3092nxybyb0otqw18e8nh5nty&role=all&listing_id={}&_offset={}&_limit={}".format(listingid,offset,limits)
 
     response = requests.get(api_url)
     # if there is no reviews, response still have 'reviews' section, but just empty
     reviews = response.json()["reviews"]
 
-    return [review["comments"] for review in reviews if is_english(review["comments"])]
+    eof = True if len(reviews) < limits else False
+    return eof,(review["comments"] for review in reviews if is_english(review["comments"]) )
+
+def get_comments(room,limits=50):
+    offset = 0
+    eof = False
+    while not eof:
+        eof,comments = _get_onepage_comments(room.id,offset,limits)
+        room.comments.extend(comments)
+        offset += limits
 
 def parse_room(listing_id,meta):
     #################### basic information
@@ -86,7 +95,7 @@ def parse_room(listing_id,meta):
     parse_evaluations(room,meta)
 
     #################### comments
-    room.comments = parse_comments(listing_id)
+    get_comments(room)
 
     return room
 

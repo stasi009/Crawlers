@@ -16,7 +16,7 @@ def pprint_json(text,outname):
 
 
 meta = abn_meta.MetaInfo()
-listing_id = 1246769
+listing_id = 1093088
 room = abn_parser.parse_room(listing_id,meta)
 d = room.to_dict()
 with open("temp3.json","wt") as outf:
