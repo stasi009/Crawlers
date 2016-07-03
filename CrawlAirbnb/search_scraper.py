@@ -16,8 +16,7 @@ def _onepage_search(location,offset,limits=50):
     except KeyError:
         logging.error("status_code=%d, content='%s'",response.status_code,response.text)
 
-def search(location,sleep_interval=1, limits=50):
-    offset = 0
+def search(location,offset,sleep_interval=1, limits=50):
     eof = False
     while not eof:
         eof, listingids = _onepage_search(location,offset,limits)
@@ -29,11 +28,12 @@ def search(location,sleep_interval=1, limits=50):
         time.sleep(sleep_interval)
 
 ########################################
-location = "San-Francisco--CA"
+# location = "San-Francisco--CA"
+location = "New-York--NY--United-States"
 offset = 0
 limits = 50
 
-search_results_iterator = search(location,sleep_interval=1)
+search_results_iterator = search(location,offset,sleep_interval=2)
 for index,listingid in enumerate(search_results_iterator):
     print "[{}]: {}".format(index+1,listingid)
 
