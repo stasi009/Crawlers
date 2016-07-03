@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>7e23189b-e00e-4117-a2a1-e66e938e530b</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>CrawlAirbnb.py</StartupFile>
+    <StartupFile>tests.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -22,11 +22,17 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="abn_meta.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="abn_parser.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="CrawlAirbnb.py" />
+    <Compile Include="main.py" />
     <Compile Include="abn_entities.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="others.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="tests.py">

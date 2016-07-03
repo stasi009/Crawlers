@@ -46,11 +46,17 @@ class Room(object):
         
         # ---------------------- evaluations
         self.business_travel = d.get("is_business_travel_ready",False)
-        self.rating = d.get("star_rating",None)
+        self.star_rating = d.get("star_rating",None)
         self.reviews_count = d.get("reviews_count",0)
 
+        self.review_score = 0
+        self.aspect_ratings = {}
+        self.saved2wishlist = 0
+        self.comments = []
+        self.review_tags = []
+
     def to_dict(self):
-        d = {
+        return {
             "id": self.id,
             "name":self.name,
             "city": self.city,
@@ -72,31 +78,13 @@ class Room(object):
             "monthly_price_factor": self.month_price_factor,
             "weekly_price_factor": self.week_price_factor,
             "is_business_travel_ready":self.business_travel,
-            "star_rating": self.rating ,
+            "star_rating": self.star_rating ,
             "reviews_count": self.reviews_count,
+            "aspect_ratings":self.aspect_ratings,
+            "saved2wishlist":self.saved2wishlist,
+            "comments": self.comments,
+            "review_tags": self.review_tags
             }
-
-        try:
-            d["aspect_ratings"] = self.aspect_ratings
-        except AttributeError:
-            pass
-
-        try:
-            d["saved2wishlist"] = self.saved2wishlist
-        except AttributeError:
-            pass
-
-        try:
-            d["comments"] = self.comments
-        except AttributeError:
-            pass
-
-        try:
-            d["review_tags"] = self.review_tags
-        except AttributeError:
-            pass
-
-        return d
 
 
 

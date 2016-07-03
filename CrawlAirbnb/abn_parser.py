@@ -7,20 +7,6 @@ import re
 import itertools
 from abn_entities import Room
 
-Aspects = ["Accuracy","Communication","Cleanliness","Location","Check In","Value"]
-AspectPatterns = dict((aspect,re.compile(r'\${}.0.0.0$'.format(aspect))) for aspect in Aspects)
-
-def get_aspect_rating(soup,aspect,listingid):
-    pattern = AspectPatterns[aspect]
-    tags = soup.findAll('div',{'class':'star-rating','data-reactid':pattern})
-    if len(tags) == 1:
-        return float(tags[0].attrs["content"])
-    elif len(tags) == 0: # not found
-        return None
-    else:
-        errmsg = "Room<{}> has {} ratings for '{}'".format(listingid,len(tags),aspect)
-        raise Exception(errmsg)
-
 def get_saved2wishlist(soup,listingid):
     tags = soup.findAll('div',{'class':'wish_list_button'})
     if len(tags) == 1:
@@ -31,20 +17,35 @@ def get_saved2wishlist(soup,listingid):
         errmsg = "Room<{}> has {} 'saved to wishlist'".format(listingid,len(tags))
         raise Exception(errmsg)
 
-def parse_aspect_ratings(room):
+def get_review_tags(soup,meta):
+    tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
+    if tag is None:
+        return []
+    else:
+        return None
+
+def parse_evaluations(room,meta):
     url = "https://www.airbnb.com/rooms/{}".format(room.id)
     response = requests.get(url)
     soup = BeautifulSoup(response.content)
+    
+    tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
+    # json text is embedded in '<!--xxx-->', so remove comment tags at both ends
+    d = json.loads( tag.text[4:-3] )
 
+    dict_listing = d["listing"]
     ################ retrieve aspect ratings
-    aspect_ratings = {}
-    for aspect in Aspects:
-        rating = get_aspect_rating(soup,aspect,room.id)
-        if rating is not None:
-            aspect_ratings[aspect] = rating
+    room.review_score = dict_listing["review_details_interface"]["review_score"]
 
-    if len(aspect_ratings) >0:
-        room.aspect_ratings = aspect_ratings
+    review_summary = dict_listing["review_details_interface"]["review_summary"]
+    for aspect in review_summary:
+        room.aspect_ratings[aspect["label"]] = aspect["value"] 
+
+    ################ retrieve review tags
+    review_tags = dict_listing["listing_tags"]
+    for tag in review_tags:
+        tagid = tag["tagId"]
+        room.review_tags.append(meta.tagid2txt(tagid))
 
     ################ how many save this room into their wishlist
     room.saved2wishlist = get_saved2wishlist(soup,room.id)
@@ -66,14 +67,14 @@ def parse_comments(listingid):
 
     return [review["comments"] for review in reviews if is_english(review["comments"])]
 
-def parse_room(listing_id):
+def parse_room(listing_id,meta):
     #################### basic information
     api_url = "https://api.airbnb.com/v2/listings/{}?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3".format(listing_id)
     response = requests.get(api_url)
     room = Room(response.json()["listing"])
 
     #################### aspect ratings
-    parse_aspect_ratings(room)
+    parse_evaluations(room,meta)
 
     #################### comments
     room.comments = parse_comments(listing_id)
