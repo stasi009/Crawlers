@@ -25,7 +25,7 @@
     <Compile Include="abn_meta.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="abn_parser.py">
+    <Compile Include="listing_scraper.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="main.py" />
