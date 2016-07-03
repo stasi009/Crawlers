@@ -5,7 +5,17 @@ import requests
 import json
 import re
 import itertools
+import threading
+import time
 from abn_entities import Room
+
+def is_english(txt):
+    try:
+        txt.decode('ascii')
+    except UnicodeEncodeError:
+        return False
+    else:
+        return True
 
 def get_saved2wishlist(soup,listingid):
     tags = soup.findAll('div',{'class':'wish_list_button'})
@@ -24,9 +34,8 @@ def get_review_tags(soup,meta):
     else:
         return None
 
-def parse_evaluations(room,meta):
-    url = "https://www.airbnb.com/rooms/{}".format(room.id)
-    response = requests.get(url)
+def get_evaluations(room,meta):
+    response = requests.get("https://www.airbnb.com/rooms/{}".format(room.id))
     soup = BeautifulSoup(response.text)
     
     tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
@@ -59,15 +68,7 @@ def parse_evaluations(room,meta):
     ################ how many save this room into their wishlist
     room.saved2wishlist = get_saved2wishlist(soup,room.id)
 
-def is_english(txt):
-    try:
-        txt.decode('ascii')
-    except UnicodeEncodeError:
-        return False
-    else:
-        return True
-
-def _get_onepage_comments(listingid,offset,limits=50):
+def get_onepage_comments(listingid,offset,limits=50):
     api_url = "https://api.airbnb.com/v2/reviews?client_id=3092nxybyb0otqw18e8nh5nty&role=all&listing_id={}&_offset={}&_limit={}".format(listingid,offset,limits)
 
     response = requests.get(api_url)
@@ -77,27 +78,44 @@ def _get_onepage_comments(listingid,offset,limits=50):
     eof = True if len(reviews) < limits else False
     return eof,(review["comments"] for review in reviews if is_english(review["comments"]) )
 
-def get_comments(room,limits=50):
-    offset = 0
-    eof = False
-    while not eof:
-        eof,comments = _get_onepage_comments(room.id,offset,limits)
-        room.comments.extend(comments)
-        offset += limits
+class ListingScraper(threading.Thread):
+    def __init__(self,meta,inQ,outQ,settings = {}):
+        threading.Thread.__init__(self)
+        self._meta = meta
+        self._inQ = inQ
+        self._outQ = outQ
 
-def parse_room(listing_id,meta):
-    #################### basic information
-    api_url = "https://api.airbnb.com/v2/listings/{}?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3".format(listing_id)
-    response = requests.get(api_url)
-    room = Room(response.json()["listing"])
+        self._sleep_interval = settings.get("sleep_interval",2)# unit: seconds
+        self._page_limits = settings.get("page_limits",50)# maximal size in a page
 
-    #################### aspect ratings
-    parse_evaluations(room,meta)
+    def get_room(self,listing_id):
+        #################### basic information
+        time.sleep(self._sleep_interval)
+        api_url = "https://api.airbnb.com/v2/listings/{}?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3".format(listing_id)
+        response = requests.get(api_url)
+        room = Room(response.json()["listing"])
 
-    #################### comments
-    get_comments(room)
+        #################### aspect ratings
+        time.sleep(self._sleep_interval)
+        get_evaluations(room,self._meta)
 
-    return room
+        #################### comments
+        offset = 0
+        eof = False
+        while not eof:
+            time.sleep(self._sleep_interval)
+            eof,comments = get_onepage_comments(room.id,offset,self._page_limits)
+            room.comments.extend(comments)
+            offset += self._page_limits
+
+        return room
+
+
+
+
+
+
+
 
 
 

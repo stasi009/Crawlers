@@ -21,7 +21,7 @@ class Room(object):
         self.name = d["name"]
         self.city = d["city"]
         self.state = d["state"]
-        self.zipcode = int(d["zipcode"])
+        self.zipcode = d["zipcode"]
         self.neighborhood = d["neighborhood"]
         self.instant_bookable = d["instant_bookable"]
 

@@ -22,7 +22,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="abn_meta.py">
+    <Compile Include="meta_info.py">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="listing_scraper.py">
