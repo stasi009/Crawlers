@@ -6,7 +6,6 @@ import json
 import re
 import itertools
 import threading
-import time
 import logging
 from abn_entities import Room
 
@@ -35,16 +34,11 @@ def get_review_tags(soup,meta):
     else:
         return None
 
-class ListingScraper(threading.Thread):
-    def __init__(self,meta,inQ,outQ,settings = {}):
-        threading.Thread.__init__(self)
+class ListingScraper(object):
+    def __init__(self,meta,control,logger):
         self._meta = meta
-        self._inQ = inQ
-        self._outQ = outQ
-        
-        self._logger = logging.getLogger("crawlabn.listing")
-        self._sleep_interval = settings.get("sleep_interval",2)# unit: seconds
-        self._page_limits = settings.get("page_limits",50)# maximal size in a page
+        self._control = control
+        self._logger = logger
 
     def get_evaluations(self,room):
         response = requests.get("https://www.airbnb.com/rooms/{}".format(room.id))
@@ -53,15 +47,16 @@ class ListingScraper(threading.Thread):
 
             soup = BeautifulSoup(response.text)
             tag = soup.find('script',{'type':"application/json",'data-hypernova-key':"listingbundlejs"})
-            # json text is embedded in '<!--xxx-->', so remove comment tags at both ends
-            d = json.loads( tag.text[4:-3] )
+            # json text is embedded in '<!--xxx-->', so remove comment tags at
+            # both ends
+            d = json.loads(tag.text[4:-3])
 
             ################ star distribution
             dict_star_histogram = d["starHistogramData"]
             for s in dict_star_histogram:
-                r = int( s["rating"])
+                r = int(s["rating"])
                 # rating is from 1 to 5, so have to r-1
-                room.star_percentages[r-1] = s["percentage"]
+                room.star_percentages[r - 1] = s["percentage"]
 
             dict_listing = d["listing"]
             ################ retrieve aspect ratings
@@ -90,20 +85,21 @@ class ListingScraper(threading.Thread):
         response = requests.get(api_url)
 
         if response.ok:
-            self._logger.info("listing<%d>'s comments from [%d~%d] downloaded",listingid,offset,offset+limits)
+            self._logger.info("listing<%d>'s comments from [%d~%d] downloaded",listingid,offset,offset + limits)
 
-            # if there is no reviews, response still have 'reviews' section, but just empty
+            # if there is no reviews, response still have 'reviews' section,
+            # but just empty
             reviews = response.json()["reviews"]
 
             nextpage = False if len(reviews) < limits else True
             return nextpage,(review["comments"] for review in reviews if is_english(review["comments"]) )
         else:
-            self._logger.error("failed to download listing<%d>'s comments from [%d~%d], status code=%d, reason='%s', content='%s'",listingid,offset,offset+limits, response.status_code,response.reason,response.text)
+            self._logger.error("failed to download listing<%d>'s comments from [%d~%d], status code=%d, reason='%s', content='%s'",listingid,offset,offset + limits, response.status_code,response.reason,response.text)
             return False,None # stop when error occurs
 
     def get_room(self,listing_id):
         #################### basic information
-        time.sleep(self._sleep_interval)
+        self._control.sleep()
         api_url = "https://api.airbnb.com/v2/listings/{}?client_id=3092nxybyb0otqw18e8nh5nty&_format=v1_legacy_for_p3".format(listing_id)
         response = requests.get(api_url)
         if response.ok:
@@ -114,19 +110,50 @@ class ListingScraper(threading.Thread):
             response.raise_for_status()
 
         #################### aspect ratings
-        time.sleep(self._sleep_interval)
+        self._control.sleep()
         self.get_evaluations(room)
 
         #################### comments
         offset = 0
         nextpage = True
         while nextpage:
-            time.sleep(self._sleep_interval)
-            nextpage,comments = self.get_onepage_comments(room.id,offset,self._page_limits)
+            self._control.sleep()
+            nextpage,comments = self.get_onepage_comments(room.id,offset,self._control.page_limits)
             room.comments.extend(comments)
-            offset += self._page_limits
+            offset += self._control.page_limits
 
+        self._logger.info("completes scraping listing<%d>",listing_id)
         return room
+
+class ListingScrapeAgent(threading.Thread):
+
+    def __init__(self,inQ,outQ,meta,control):
+        threading.Thread.__init__(self)
+        self.daemon = True
+        self._inQ = inQ
+        self._outQ = outQ
+        self._logger = logging.getLogger("crawlabn.listing")
+        self._scraper = ListingScraper(meta,control,self._logger)
+
+    def run(self):
+        while True:
+            listingids = self._inQ.get()
+
+            rooms = []
+            for listingid in listingids:
+                try:
+                    room = self._scraper.get_room(listingid)
+                    rooms.append(room)
+                except Exception as error:
+                    self._logger.error("failed to scrape listing<%d> due to '%s'",listingid,str(error))
+
+            if len(rooms) > 0:
+                self._outQ.put(rooms)
+                self._logger.info("########### scraped %d rooms ###########",len(rooms))
+
+            self._inQ.task_done()
+
+
 
 
 

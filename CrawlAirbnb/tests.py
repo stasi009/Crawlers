@@ -3,12 +3,14 @@ from bs4 import BeautifulSoup
 import requests
 import json
 import logging
-from abn_entities import Room
-from listing_scraper import ListingScraper
-from listing_saver import ListingJsonSaver
-from search_scraper import SearchScraper
+from Queue import Queue
+from listing_scraper import ListingScrapeAgent
+from listing_saver import ListingSaveAgent
+from search_scraper import SearchScrapeAgent
 from meta_info import MetaInfo
+from crawl_control import Control
 
+# --------------------------- configure logging
 logger = logging.getLogger('crawlabn')
 logger.setLevel(logging.INFO)
 
@@ -20,22 +22,30 @@ floghandler = logging.FileHandler('errors.log',mode='w')
 floghandler.setLevel(logging.WARNING)
 logger.addHandler(floghandler)
 
+# --------------------------- prepare
+control = Control(search_pages = 1)
 meta = MetaInfo()
-listing_scraper = ListingScraper(meta,None,None)
 
-listing_id = 1308841
-room = listing_scraper.get_room(listing_id)
+listing_id_queue = Queue()
+rooms_queue = Queue()
 
-saver = ListingJsonSaver("rooms_json")
-saver.save(room)
+locations = ['San-Francisco--CA']
+search_agent = SearchScrapeAgent(locations,listing_id_queue,control)
+listing_scrape_agent = ListingScrapeAgent(listing_id_queue,rooms_queue,meta,control)
+save_agent = ListingSaveAgent(rooms_queue,control)
+
+# --------------------------- start
+search_agent.start()
+listing_scrape_agent.start()
+save_agent.start()
+
+# --------------------------- block main from existing
+_ = raw_input("Press any key to exist, ......")
 
 
-searcher = SearchScraper()
-nextpage,listingids = searcher.search_onepage("New-York--NY--United-States",1000,50)
-if nextpage:
-    print listingids
-else:
-    print "EOF"
+
+
+
 
 
 
