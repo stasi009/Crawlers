@@ -29,14 +29,21 @@ meta = MetaInfo()
 listing_id_queue = Queue()
 rooms_queue = Queue()
 
-locations = ['San-Francisco--CA']
+# locations = ['San-Francisco--CA']
+locations = ['Seattle--WA--United-States']
 search_agent = SearchScrapeAgent(locations,listing_id_queue,control)
-listing_scrape_agent = ListingScrapeAgent(listing_id_queue,rooms_queue,meta,control)
+
+num_scrapers = 2
+listing_scrape_agents = [ListingScrapeAgent(listing_id_queue,rooms_queue,meta,control) for _ in xrange(num_scrapers)]
+
 save_agent = ListingSaveAgent(rooms_queue,control)
 
 # --------------------------- start
 search_agent.start()
-listing_scrape_agent.start()
+
+for scrape_agent in listing_scrape_agents:
+    scrape_agent.start()
+
 save_agent.start()
 
 # --------------------------- block main from existing
